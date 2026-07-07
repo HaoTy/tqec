@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=55c26ed414f5f8a31ebb" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=a95f357e85573c9b56d5" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -37,10 +37,10 @@
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="_static/scripts/fontawesome.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=a95f357e85573c9b56d5"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5" />
 
     <script src="_static/documentation_options.js?v=5929fcd5"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
@@ -203,11 +203,18 @@
       
         <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
       
         <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -220,8 +227,7 @@
           
           
           
-          <a href="https://github.com/tqec/tqec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/tqec/tqec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -232,8 +238,7 @@
           
           
           
-          <a href="https://groups.google.com/g/tqec-design-automation" title="Google Group" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">Google Group</span></a>
+          <a href="https://groups.google.com/g/tqec-design-automation" title="Google Group" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i><span class="visually-hidden">Google Group</span></a>
         </li>
 </ul></div>
       
@@ -338,11 +343,18 @@
         
           <div class="navbar-item">
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button></div>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
         
           <div class="navbar-item"><ul class="navbar-icon-links"
     aria-label="Icon Links">
@@ -355,8 +367,7 @@
           
           
           
-          <a href="https://github.com/tqec/tqec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">GitHub</span></a>
+          <a href="https://github.com/tqec/tqec" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
         </li>
         <li class="nav-item">
           
@@ -367,8 +378,7 @@
           
           
           
-          <a href="https://groups.google.com/g/tqec-design-automation" title="Google Group" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i>
-            <span class="sr-only">Google Group</span></a>
+          <a href="https://groups.google.com/g/tqec-design-automation" title="Google Group" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i><span class="visually-hidden">Google Group</span></a>
         </li>
 </ul></div>
         
@@ -412,7 +422,7 @@
 <a class="reference external" href="https://github.com/tqec/tqec/actions/workflows/ci.yml"><img alt="build" src="https://github.com/tqec/tqec/actions/workflows/ci.yml/badge.svg" /></a>
 <a class="reference external" href="https://github.com/tqec/tqec/actions/workflows/gh-pages.yml"><img alt="docs" src="https://github.com/tqec/tqec/actions/workflows/gh-pages.yml/badge.svg" /></a>
 <a class="reference external" href="https://github.com/tqec/tqec/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/tqec/tqec.svg" /></a>
-<a class="reference external" href="https://www.star-history.com/#tqec/tqec&amp;amp;Date"><img alt="Star History Chart" src="https://img.shields.io/badge/%F0%9F%93%88-Star%20History-blue?style=flat-square" /></a>
+<a class="reference external" href="https://www.star-history.com/#tqec/tqec&amp;Date"><img alt="Star History Chart" src="https://img.shields.io/badge/%F0%9F%93%88-Star%20History-blue?style=flat-square" /></a>
 <a class="reference external" href="https://tqec.github.io/tqec/ethical_notice.html"><img alt="Ethical Notice" src="https://img.shields.io/badge/docs-ethical%20notice-blue" /></a>
 <a class="reference external" href="https://github.com/tqec/tqec/blob/main/LICENSE"><img alt="Licensed under the Apache 2.0 open-source license" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=opensourceinitiative" /></a></p>
 <p>TQEC (Topological Quantum Error Correction) is a design automation software project for representing,
@@ -446,9 +456,8 @@ These blocks can then be combined to construct large-scale logical computations,
 </section>
 <section id="basic-usage">
 <h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">#</a></h2>
-<p>Here we generate the circuits for a logical CNOT between two logical qubits to demonstrate how to use the tool.
-Refer to the <a class="reference external" href="https://tqec.github.io/tqec/user_guide/quick_start.html">quick start guide</a> in the documentation for a more detailed explanation.
-This use case converts a circuit in the Collada format (created using a 3D modeling tool such as SketchUp)
+<p>In this snippet, we generate the circuits for a logical CNOT between two logical qubits to demonstrate how to use the tool.
+<code class="docutils literal notranslate"><span class="pre">tqec</span></code> converts a circuit in the Collada format (created using a 3D modeling tool such as SketchUp)
 into the Stim circuit format.</p>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
@@ -476,7 +485,8 @@ into the Stim circuit format.</p>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>See the <a class="reference external" href="https://tqec.github.io/tqec/user_guide/index.html">user guide</a> for more tutorials.</p>
+<p>For a more in-depth explanation of this snippet, refer to our <a class="reference external" href="https://tqec.github.io/tqec/user_guide/quick_start.html">quick start guide</a>.</p>
+<p>For more tutorials like this one, refer to our <a class="reference external" href="https://tqec.github.io/tqec/user_guide/index.html">user guide</a>.</p>
 </section>
 <section id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">#</a></h2>
@@ -503,23 +513,23 @@ into the Stim circuit format.</p>
 </section>
 <section id="community">
 <h2>Community<a class="headerlink" href="#community" title="Link to this heading">#</a></h2>
-<p>Every Wednesday at 8:30am PST, we hold <a class="reference external" href="https://meet.jit.si/TQEC-design-automation">meetings</a> to discuss project progress and conduct educational talks related to TQEC.</p>
-<p>Here are some helpful links to learn more about the community:</p>
+<p>Every Wednesday at 8:30am PST, we hold <a class="reference external" href="https://meet.jit.si/TQEC-design-automation">our online meeting</a> to discuss project progress and conduct educational talks related to TQEC.</p>
+<p>Here are some helpful links to learn more about the TQEC community’s work:</p>
 <ul class="simple">
-<li><p>Overview of state of the art 2D QEC: <a class="reference external" href="https://docs.google.com/presentation/d/1xYBfkVMpA1YEVhpgTZpKvY8zeOO1VyHmRWvx_kDJEU8/edit?usp=sharing">Slides</a>/<a class="reference external" href="https://www.youtube.com/watch?v=aUtH7wdwBAM&amp;amp;t=2s">Video</a></p></li>
+<li><p>Overview of state of the art 2D QEC: <a class="reference external" href="https://docs.google.com/presentation/d/1xYBfkVMpA1YEVhpgTZpKvY8zeOO1VyHmRWvx_kDJEU8/edit?usp=sharing">Slides</a>/<a class="reference external" href="https://www.youtube.com/watch?v=aUtH7wdwBAM&amp;t=2s">Video</a></p></li>
 <li><p>Community questions and answers: <a class="reference external" href="https://docs.google.com/document/d/1VRBPU5eMGVEcxzgHccd98Ooa7geHGRWJoN_fdB1VClM/edit?usp=sharing">Docs</a></p></li>
 <li><p>Introduction to surface code quantum computation: <a class="reference external" href="https://docs.google.com/presentation/d/1GxGD9kzDYJA6X47BXGII2qjDVVoub5BsSVrGHRZINO4/edit?usp=sharing">Slides</a></p></li>
 <li><p>Programming a quantum computer using SketchUp: <a class="reference external" href="https://docs.google.com/presentation/d/1MjFuODipnmF-jDstEnQrqbsOtbSKZyPsuTOMo8wpSJc/edit?usp=sharing">Slides</a>/<a class="reference external" href="https://drive.google.com/file/d/1o1LMiidtYDcVoEFZXsJPb7XdTkZ83VFX/view?usp=drive_link">Video</a></p></li>
 </ul>
-<p>All the resources and group meeting recordings are available at <a class="reference external" href="https://docs.google.com/spreadsheets/d/11DSA2wzKLOrfTGNHunFvzsMYeO7jZ8Ny8kpzoC_wKQg/edit?usp=sharing&amp;amp;resourcekey=0-PdGFkp5s-4XWihMSxk0UIg">this link</a>.</p>
+<p>All the resources and group meeting recordings are available at <a class="reference external" href="https://docs.google.com/spreadsheets/d/11DSA2wzKLOrfTGNHunFvzsMYeO7jZ8Ny8kpzoC_wKQg/edit?usp=sharing&amp;resourcekey=0-PdGFkp5s-4XWihMSxk0UIg">our Resources and Recordings spreadsheet</a>.</p>
 <p>Please join the <a class="reference external" href="https://groups.google.com/g/tqec-design-automation">Google group</a> to receive more updates and information!</p>
 <hr class="docutils" />
 <blockquote>
 <div><p class="rubric" id="ethical-notice"><strong>Ethical notice</strong></p>
-<p>This library is intended for <strong>academic, educational, and civilian research only</strong>, in the field of <strong>fault-tolerant quantum computing</strong>, particularly in <strong>surface code compilation</strong> and <strong>topological error correction</strong>.</p>
+<p>This library is intended for <strong>academic, educational, and civilian research</strong> in the field of <strong>fault-tolerant quantum computing</strong>, particularly in <strong>surface code compilation</strong> and <strong>topological error correction</strong>.</p>
 <p>It is made freely and publicly available without access restrictions, in the interest of advancing <strong>open scientific and academic collaboration</strong>.</p>
-<p>The maintainers request that users and contributors <strong>refrain from engaging in, supporting, or facilitating military, surveillance, or dual-use applications</strong>.</p>
-<p>Please, review the full <a class="reference external" href="https://github.com/tqec/tqec/blob/main/ETHICAL_NOTICE.md"><code class="docutils literal notranslate"><span class="pre">ETHICAL_NOTICE.md</span></code></a> for important terms regarding <strong>export control</strong>, <strong>ethical use</strong>, and <strong>contributor responsibilities</strong>.</p>
+<p>Therefore, the maintainers request that users and contributors <strong>refrain from using the TQEC library to engage in, support, or facilite military, surveillance, or dual-use applications</strong>.</p>
+<p>Please review the full <a class="reference external" href="https://github.com/tqec/tqec/blob/main/ETHICAL_NOTICE.md"><code class="docutils literal notranslate"><span class="pre">ETHICAL_NOTICE.md</span></code></a> for important terms regarding <strong>export control</strong>, <strong>ethical use</strong>, and <strong>contributor responsibilities</strong>.</p>
 </div></blockquote>
 </section>
 </section>
@@ -595,8 +605,8 @@ into the Stim circuit format.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=55c26ed414f5f8a31ebb"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=55c26ed414f5f8a31ebb"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=a95f357e85573c9b56d5"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=a95f357e85573c9b56d5"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -630,7 +640,7 @@ into the Stim circuit format.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.17.1.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.19.0.
 </p></div>
       
     </div>
