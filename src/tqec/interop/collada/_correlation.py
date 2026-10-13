@@ -9,6 +9,7 @@ from tqec.computation.correlation import CorrelationSurface, ZXEdge
 from tqec.computation.cube import ZXCube
 from tqec.interop.collada.read_write import _Transformation
 from tqec.utils.enums import Basis
+from tqec.utils.exceptions import TQECError
 from tqec.utils.position import Direction3D, FloatPosition3D, Position3D
 
 TransformationResult = tuple[Basis, _Transformation]
@@ -34,22 +35,137 @@ class CorrelationSurfaceTransformationHelper:
         transformations: list[TransformationResult] = []
 
         # Surfaces in the pipes
-        for edge in correlation_surface.span:
+        for edge in sorted(correlation_surface.span):
             if edge.is_self_loop:
                 continue
             transformations.extend(self._compute_pipe_transformations(edge))
 
         # Surfaces in the cubes
-        for pos in correlation_surface.positions:
+        for pos in sorted(correlation_surface.positions):
             cube = self.block_graph[pos]
             # Do not add surfaces in ports or Y Half Cubes
             if cube.is_port or cube.is_y_cube:
+                continue
+            if cube.is_conditional:
+                transformations.extend(
+                    self._compute_partial_cube_transformations(
+                        pos, correlation_surface.edges_at(pos)
+                    )
+                )
                 continue
             transformations.extend(
                 self._compute_cube_transformations(
                     pos,
                     correlation_surface.edges_at(pos),
                     correlation_surface.bases_at(pos),
+                )
+            )
+        return transformations
+
+    def get_transformations_for_partial_surface(
+        self,
+        correlation_surface: CorrelationSurface,
+    ) -> list[TransformationResult]:
+        """Represent a stored partial surface without completing its open endpoints.
+
+        Pipe patches extend to the centers of their endpoint cubes. Their planes
+        depend only on the incident pipe walls and edge bases, so conditional
+        endpoints do not require selecting a branch. Ports and ordinary Y half
+        cubes have no interior endpoint sheets; singleton support is shown as a
+        small tile for every cube kind.
+
+        Raises:
+            TQECError: If a referenced cube or pipe is absent from the graph.
+
+        """
+        for pos in sorted(correlation_surface.positions):
+            if pos not in self.block_graph:
+                raise TQECError(f"Partial correlation surface references missing cube at {pos}.")
+
+        edges = sorted({ZXEdge.sorted(edge.u, edge.v) for edge in correlation_surface.span})
+        for edge in edges:
+            if not edge.is_self_loop and not self.block_graph.has_pipe_between(
+                edge.u.position, edge.v.position
+            ):
+                raise TQECError(
+                    "Partial correlation surface references missing pipe between "
+                    f"{edge.u.position} and {edge.v.position}."
+                )
+
+        transformations: list[TransformationResult] = []
+        for edge in edges:
+            if not edge.is_self_loop:
+                transformations.extend(self._compute_pipe_transformations(edge))
+        for pos in sorted(correlation_surface.positions):
+            transformations.extend(
+                self._compute_partial_cube_transformations(pos, correlation_surface.edges_at(pos))
+            )
+        return transformations
+
+    def _compute_partial_cube_transformations(
+        self, position: Position3D, correlation_edges: set[ZXEdge]
+    ) -> list[TransformationResult]:
+        """Create half-length endpoint sheets and small tiles for singleton support."""
+        cube = self.block_graph[position]
+        scaled_position = self._scale_position(position)
+        transformations: list[TransformationResult] = []
+        singleton_bases: set[Basis] = set()
+        for edge in sorted({ZXEdge.sorted(edge.u, edge.v) for edge in correlation_edges}):
+            if edge.is_self_loop:
+                singleton_bases.update((edge.u.basis, edge.v.basis))
+                continue
+            if cube.is_port or cube.is_y_cube:
+                continue
+            pipe = self.block_graph.get_pipe(edge.u.position, edge.v.position)
+            basis = edge.get_basis(position)
+            at_head = pipe.at_head(position)
+            normal_direction = next(
+                direction
+                for direction in Direction3D.all_directions()
+                if pipe.kind.get_basis_along(direction, at_head) == basis.flipped()
+            )
+            translation = scaled_position.shift_in_direction(normal_direction, 0.5)
+            if at_head:
+                translation = translation.shift_in_direction(pipe.direction, 0.5)
+            # The primitive is in XY; a temporal pipe scales the local axis
+            # rotated into Z rather than scaling the primitive's normal.
+            scale_direction = (
+                pipe.direction if pipe.direction != Direction3D.Z else normal_direction
+            )
+            transformations.append(
+                (
+                    basis,
+                    _Transformation(
+                        translation=translation.as_array(),
+                        scale=_get_scale(scale_direction, 0.5),
+                        rotation=_rotation_to_plane(normal_direction),
+                    ),
+                )
+            )
+
+        tile_center_z = 0.5
+        if cube.is_y_cube:
+            tile_center_z = 0.25
+            if self.block_graph.has_pipe_between(position, position.shift_by(dz=1)):
+                tile_center_z += 0.5
+            elif self.block_graph.has_pipe_between(position, position.shift_by(dz=-1)):
+                tile_center_z -= 0.5
+        for basis in sorted(singleton_bases):
+            # A singleton has no incident edge to determine a sheet plane.
+            # Mark its support with a small horizontal tile instead. Separate
+            # coincident X/Z tiles to avoid coplanar transparency artifacts.
+            # Fixed offsets also let overlapping conditions share their tiles.
+            offset = -0.01 if basis == Basis.X else 0.01
+            transformations.append(
+                (
+                    basis,
+                    _Transformation(
+                        translation=scaled_position.shift_by(
+                            0.35, 0.35, tile_center_z + offset
+                        ).as_array(),
+                        scale=np.array([0.3, 0.3, 1.0], dtype=np.float32),
+                        rotation=np.eye(3, dtype=np.float32),
+                    ),
                 )
             )
         return transformations
@@ -75,7 +191,7 @@ class CorrelationSurfaceTransformationHelper:
         return next(
             d
             for d in Direction3D.all_directions()
-            if pipe.kind.get_basis_along(d) == correlation_basis.flipped()
+            if pipe.kind.get_basis_along(d, pipe.at_head(up)) == correlation_basis.flipped()
         )
 
     def _scale_position(self, pos: Position3D) -> FloatPosition3D:
@@ -87,6 +203,7 @@ class CorrelationSurfaceTransformationHelper:
         If the edge is a Hadamard edge, two surfaces with different basis are created.
 
         """
+        edge = ZXEdge.sorted(edge.u, edge.v)
         transformations: list[TransformationResult] = []
         normal_direction = self._surface_normal_direction(edge)
         edge_direction = self._edge_direction(edge)

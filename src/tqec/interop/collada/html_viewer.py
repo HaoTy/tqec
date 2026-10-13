@@ -122,9 +122,30 @@ class _ColladaHTMLViewer:
     function processModel(modelScene) {
       modelScene.traverse((node) => {
         if (node.isMesh) {
-          node.material.side = THREE.DoubleSide;
+          const materials = Array.isArray(node.material) ? node.material : [node.material];
+          for (const material of materials) {
+            material.side = THREE.DoubleSide;
+            if (material.opacity < 1) {
+              material.transparent = true;
+              material.depthWrite = false;
+            }
+          }
 
-          if (node.name.endsWith("correlation_surface")) {
+          // ColladaLoader may put a library instance's name on a parent group.
+          let annotation = false;
+          for (let ancestor = node; ancestor; ancestor = ancestor.parent) {
+            const name = ancestor.name || "";
+            if (name.endsWith("correlation_surface") ||
+                name.endsWith("_CORRELATION") ||
+                name.endsWith("condition_link") ||
+                name.endsWith("_CONDITION_LINK") ||
+                name.endsWith("conditional_frame") ||
+                name.endsWith("_CONDITIONAL_FRAME")) {
+              annotation = true;
+              break;
+            }
+          }
+          if (annotation) {
             return;
           }
           // Add edges for better visibility

@@ -494,6 +494,8 @@ class BlockGraph:
         pipe_length: float = 2.0,
         pop_faces_at_directions: Iterable[SignedDirection3D | str] = (),
         show_correlation_surface: CorrelationSurface | None = None,
+        *,
+        show_conditions: bool = True,
     ) -> None:
         """Write the block graph to a Collada DAE file.
 
@@ -505,6 +507,15 @@ class BlockGraph:
                 Default is an empty tuple.
             show_correlation_surface: The correlation surface to show in the block graph.
                 Default is None.
+            show_conditions: Show conditional cubes' controlling surfaces and rounded exterior
+                dashed links, making only blocks containing those surfaces translucent.
+                Default is True. Conditional frames remain visible when this is False.
+
+        Note:
+            Conditional cubes are drawn as two branch-colored halves of a full cube with a
+            white outer frame, including Y branches. Conditional DAE files are
+            visualization-only; use JSON to preserve conditions for reimport. Conditional cubes
+            must have exactly one compatible pipe.
 
         """
         # Needs to be imported here to avoid pulling collada when importing this module.
@@ -516,6 +527,7 @@ class BlockGraph:
             pipe_length,
             pop_faces_at_directions,
             show_correlation_surface,
+            show_conditions=show_conditions,
         )
 
     @staticmethod
@@ -542,6 +554,8 @@ class BlockGraph:
         pipe_length: float = 2.0,
         pop_faces_at_directions: Iterable[SignedDirection3D | str] = (),
         show_correlation_surface: CorrelationSurface | None = None,
+        *,
+        show_conditions: bool = True,
     ) -> _ColladaHTMLViewer:
         """View COLLADA model in html with the help of ``three.js``.
 
@@ -556,6 +570,9 @@ class BlockGraph:
                 Default is an empty tuple.
             show_correlation_surface: The correlation surface to show in the block graph.
                 Default is None.
+            show_conditions: Show conditional cubes' controlling surfaces and rounded exterior
+                dashed links, making only blocks containing those surfaces translucent.
+                Default is True. Conditional frames remain visible when this is False.
 
         Returns:
             A helper class to display the 3D model, which implements the ``_repr_html_`` method and
@@ -573,6 +590,7 @@ class BlockGraph:
             pipe_length,
             pop_faces_at_directions,
             show_correlation_surface,
+            show_conditions=show_conditions,
         )
         return display_collada_model(
             filepath_or_bytes=bytes_buffer.getvalue(),

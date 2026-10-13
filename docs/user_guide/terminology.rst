@@ -126,6 +126,26 @@ share the same wall bases along every axis but the one along which the connectin
 Conditional cubes are represented by :py:class:`~tqec.computation.cube.ConditionalCubeKind`. Given the runtime values of the conditions,
 :py:meth:`~tqec.computation.block_graph.BlockGraph.resolve_conditional_kinds` replaces every conditional cube by its selected branch, producing a static block graph.
 
+In HTML views and COLLADA exports, a conditional leaf cube is drawn as two colored
+halves. Branch 0 occupies the lower half of the split coordinate, and branch 1 the
+upper half. That coordinate is Y for an X pipe, Z for a Y pipe, and X for a Z pipe,
+so both branches appear on the face opposite the connecting pipe. A Y branch is
+represented by a green half of a full-size symbolic cube, without the shortened
+height of an ordinary Y half cube. Conditional cubes must have exactly one
+compatible pipe to be visualized.
+
+An opaque white outer frame identifies the cube as conditional while preserving
+its branch face colors. The frame follows the cube edges without an added split seam.
+
+Controlling partial correlation surfaces are shown automatically, with only the
+cubes and pipes containing them made translucent. Gray dashed connectors link
+the surfaces to their conditional cubes along rounded exterior routes, ending at
+the free cap opposite the connecting pipe. Pass
+``show_conditions=False`` to disable these annotations. See
+:doc:`collada_interop` for a runnable example and the visualization options. DAE
+files cannot reconstruct conditions on import; use JSON to preserve conditional
+computations.
+
 .. _pipe:
 
 Pipe

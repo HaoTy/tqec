@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import numpy.typing as npt
 
-from tqec.computation.cube import LeafCubeKind, ZXCube
+from tqec.computation.cube import ConditionalCubeKind, LeafCubeKind, ZXCube
 from tqec.computation.pipe import PipeKind
 from tqec.interop.color import TQECColor
 from tqec.utils.enums import Basis
@@ -103,8 +103,114 @@ class BlockGeometries:
         pop_faces_at_directions: frozenset[SignedDirection3D] = frozenset(),
     ) -> list[Face]:
         """Get the geometry of a block kind, possibly with some faces popped out."""
+        if isinstance(kind, ConditionalCubeKind) and kind not in self.geometries:
+            self._load_conditional_cube_geometry(kind)
         faces = self.geometries[kind]
         return [face for face in faces if face.normal_direction not in pop_faces_at_directions]
+
+    def get_conditional_frame_geometry(
+        self,
+        kind: ConditionalCubeKind,
+        pop_faces_at_directions: frozenset[SignedDirection3D] = frozenset(),
+    ) -> list[Face]:
+        """Frame the exterior edges of retained conditional cube faces.
+
+        Thin cuboid rods straddle the cube edges, keeping the frame visible above
+        the colored faces. Edges shared by retained faces are emitted once; a
+        removed face contributes no additional edges. The frame follows the
+        outer cube edges, while face colors show the branch split.
+
+        """
+        assert kind.pipe_direction is not None
+        lines: set[tuple[tuple[float, ...], tuple[float, ...]]] = set()
+        for direction in Direction3D.all_directions():
+            normal_axis = direction.value
+            for positive in (False, True):
+                if SignedDirection3D(direction, positive) in pop_faces_at_directions:
+                    continue
+                for line_axis in range(3):
+                    if line_axis == normal_axis:
+                        continue
+                    fixed_axis = 3 - line_axis - normal_axis
+                    for coordinate in (0.0, 1.0):
+                        start = [0.0, 0.0, 0.0]
+                        start[normal_axis] = float(positive)
+                        start[fixed_axis] = coordinate
+                        end = start.copy()
+                        end[line_axis] = 1.0
+                        lines.add((tuple(start), tuple(end)))
+
+        faces: list[Face] = []
+        half_thickness = 0.015
+        for start, end in sorted(lines):
+            lower = [coordinate - half_thickness for coordinate in start]
+            upper = [coordinate + half_thickness for coordinate in end]
+            for direction in Direction3D.all_directions():
+                normal_axis = direction.value
+                width_axis, height_axis = (normal_axis + 1) % 3, (normal_axis + 2) % 3
+                for positive in (False, True):
+                    position = lower.copy()
+                    position[normal_axis] = (upper if positive else lower)[normal_axis]
+                    faces.append(
+                        Face(
+                            TQECColor.CONDITIONAL_FRAME,
+                            upper[width_axis] - lower[width_axis],
+                            upper[height_axis] - lower[height_axis],
+                            SignedDirection3D(direction, positive),
+                            FloatPosition3D(*position),
+                        )
+                    )
+        return faces
+
+    def _load_conditional_cube_geometry(self, kind: ConditionalCubeKind) -> None:
+        """Split a full cube into branch halves parallel to its connecting pipe.
+
+        The split coordinate cycles X -> Y -> Z -> X from the pipe direction,
+        putting branch 0 below 0.5 and branch 1 above it. Only exterior faces are
+        emitted, so opening either pipe cap leaves both colors on the other cap.
+        Y branches use full-height green faces as a symbolic representation.
+
+        """
+        pipe_direction = kind.pipe_direction
+        assert pipe_direction is not None
+        split_axis = (pipe_direction.value + 1) % 3
+        faces: list[Face] = []
+        for direction in Direction3D.all_directions():
+            normal_axis = direction.value
+            colors = tuple(
+                TQECColor(branch.get_basis_along(direction).value)
+                if isinstance(branch, ZXCube)
+                else TQECColor.Y
+                for branch in kind.branches
+            )
+            for towards_positive in (False, True):
+                position = [0.0, 0.0, 0.0]
+                position[normal_axis] = float(towards_positive)
+                normal = SignedDirection3D(direction, towards_positive)
+                if normal_axis == split_axis or colors[0] == colors[1]:
+                    faces.append(
+                        Face(
+                            colors[int(towards_positive)],
+                            1.0,
+                            1.0,
+                            normal,
+                            FloatPosition3D(*position),
+                        )
+                    )
+                    continue
+                split_width = split_axis == (normal_axis + 1) % 3
+                for branch_index, color in enumerate(colors):
+                    position[split_axis] = branch_index * 0.5
+                    faces.append(
+                        Face(
+                            color,
+                            0.5 if split_width else 1.0,
+                            1.0 if split_width else 0.5,
+                            normal,
+                            FloatPosition3D(*position),
+                        )
+                    )
+        self.geometries[kind] = faces
 
     def _load_zx_cube_geometries(self) -> None:
         """Geometries for zxx, xzx, xxz, xzz, zxz, zzx cubes."""
