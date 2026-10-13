@@ -227,6 +227,27 @@ async function startPatchViewer() {
     }
   }
 
+  function addDeformationFactor(parent, factor, time, description) {
+    const support = factor.support || [];
+    const measured = ["Measured stabilizer", "Initial observable stabilizer"]
+      .includes(factor.label);
+    if (!measured) {
+      // Boundary and Clifford contributions are not measured plaquettes.
+      addSupport(parent, support, time, description, true);
+      return;
+    }
+    const points = polygonPoints(support);
+    if (!points.length) return;
+    parent.add(annotate(polygon(points, time, material(0xdea521, 1.4, true)), description));
+    parent.add(annotate(line(points.map(([x, y]) => [x, y, time]), 0xc29013, true),
+      description));
+    for (const [x, y, basis] of support) {
+      const marker = new THREE.Mesh(ringGeometry, material(0xdea521));
+      marker.position.set(x, y, time);
+      parent.add(annotate(marker, `${description}\n${basis}(${x}, ${y})`));
+    }
+  }
+
   for (const cycle of cycles) {
     const dataGroup = group("data", cycle.time);
     const syndromeGroup = group("syndrome", cycle.time);
@@ -406,11 +427,10 @@ async function startPatchViewer() {
       }
       const deformation = group("deformation", cycle.time, cycle.time, observableIndex);
       for (const factor of snapshot.factors || []) {
-        addSupport(deformation, factor.support || [], cycle.time + 0.25,
+        addDeformationFactor(deformation, factor, cycle.time + 0.25,
           [observable.name, factor.label || "Logical deformation factor", cycleText(cycle),
             snapshot.description, signedSupportText(factor.support, factor.sign),
-            measurementText(factor.measurements)].filter(Boolean).join("\n"),
-          true);
+            measurementText(factor.measurements)].filter(Boolean).join("\n"));
       }
     }
     for (const surface of observable.surfaces || []) {

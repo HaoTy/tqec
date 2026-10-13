@@ -144,6 +144,80 @@ def test_logical_deformation_is_actual_stabilizer_product() -> None:
     assert explain_transition(circuit, previous, current, [], coordinates, []) is None
 
 
+@pytest.mark.parametrize("k", [1, 2])
+@pytest.mark.parametrize("convention", [FIXED_BULK_CONVENTION, FIXED_BOUNDARY_CONVENTION])
+def test_cnot_deformations_relate_the_displayed_representatives(k, convention) -> None:
+    graph = cnot(Basis.Z)
+    computation = lower_block_graph(graph, k, convention)
+    analysis = analyse_computation(computation, graph.find_correlation_surfaces())
+    trace = {record["cycle_id"]: record for record in analysis.observables[1]["cycles"]}
+    circuit, snapshots, coordinates, _ = _build_snapshot_circuit(computation, analysis.cycles, [])
+    d = 2 * k + 1
+
+    def at(z, round_index):
+        return [s for s in snapshots if (s.cycle.block_z, s.cycle.round_index) == (z, round_index)]
+
+    def logical(group):
+        support = tuple(term for s in group for term in trace[s.cycle.index]["support"])
+        return _pauli_from_support(support, coordinates)
+
+    # The first merge contributes exactly the Z checks tiling the strip between
+    # the two displayed strings, including the weight-two boundary checks.
+    first = at(1, 0)
+    factors = [f for s in first for f in trace[s.cycle.index]["factors"]]
+    product = stim.PauliString(len(coordinates))
+    for factor in factors:
+        pauli = _pauli_from_support(factor["support"], coordinates)
+        if factor["sign"] == "-":
+            pauli = -pauli
+        product *= pauli
+    assert product == logical(at(0, d - 1)) * logical(first)
+    if convention == FIXED_BULK_CONVENTION:
+        strip = {
+            check.output_support
+            for s in first
+            for check in analysis.cycles[s.cycle.index].checks
+            if check.output_support
+            and all(
+                basis == "Z" and 1 <= x <= 2 * d - 1 and d <= y <= 3 * d + 2
+                for x, y, basis in check.output_support
+            )
+        }
+        assert {tuple(f["support"]) for f in factors} == strip
+        assert len(factors) == (d + 1) ** 2 // 2
+
+    # At the second merge the actual string only extends through prepared
+    # bridge data. It has direct zero-parity transport; no check product is
+    # needed to undo an arbitrary intermediate row choice.
+    before, after = at(1, d - 1), at(2, 0)
+    segment = circuit[before[0].instruction : after[0].instruction]
+    previous, current = logical(before), logical(after)
+    assert segment.has_flow(stim.Flow(input=previous, output=current))
+    assert not segment.has_flow(stim.Flow(input=previous, output=previous))
+    for snapshot in after:
+        record = trace[snapshot.cycle.index]
+        assert record["kind"] == "circuit_transport"
+        assert not record["factors"]
+        assert not record["transport_measurements"]
+        assert _pauli_from_support(record["transport_support"], coordinates) == current
+
+
+def test_direct_transport_separates_a_measurement_only_relation() -> None:
+    # H transports Z0 to X0. The known +Z1 readout adds an independent parity,
+    # which must not be presented as a geometric deformation of the logical.
+    circuit = stim.Circuit("R 1\nH 0\nM 1")
+    coordinates = {0: GridQubit(0, 0), 1: GridQubit(1, 0)}
+    result = explain_transition(
+        circuit, stim.PauliString("Z_"), stim.PauliString("X_"), [0], coordinates, []
+    )
+    assert result is not None
+    assert result["kind"] == "circuit_transport"
+    assert result["factors"] == []
+    assert result["transport_measurements"] == []
+    assert result["measurement_relation"] == [0]
+    assert "measurement-only relation" in result["description"]
+
+
 @pytest.mark.parametrize("convention", [FIXED_BULK_CONVENTION, FIXED_BOUNDARY_CONVENTION])
 def test_temporal_hadamard_is_circuit_transport(convention: Convention) -> None:
     graph = BlockGraph()

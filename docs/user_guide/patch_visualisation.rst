@@ -31,6 +31,20 @@ its logical Pauli support, stabilizers added or removed between rounds, and the
 stabilizer factors relating logical representatives. Tooltips give qubit
 coordinates, Pauli support, and measurement-record contributions.
 
+Logical snapshots are obtained from the compiled observable's detecting regions
+after syndrome extraction and before data readout. Deformation factors express
+the change between consecutive snapshots as a signed product of measured
+stabilizers, validated against the circuit segment and its measurement parity.
+Amber check polygons show the complete factors, including boundary checks. For
+example, observable 1 of the Z-basis CNOT at ``z=1``, round 1, uses all Z checks
+in the strip between the two displayed logical strings. Their product cancels
+the interior support and leaves the two strings.
+
+Preparation, readout, and Hadamard transport are accounted for separately from
+that stabilizer product. They can change an operator's support without requiring
+extra deformation checks; their contributions are identified in the tooltips.
+Generic boundary contributions use markers and lines rather than check polygons.
+
 To choose a compilation convention or an explicit observable:
 
 .. code-block:: python

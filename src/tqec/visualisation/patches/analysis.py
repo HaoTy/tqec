@@ -516,6 +516,11 @@ def explain_transition(
     factors. The latter are named explicitly and are never presented as round
     stabilizers. All indices in ``measurements`` and ``checks`` are local to
     ``segment``.
+
+    Keep an unchanged representative whenever it actually survives the segment.
+    Otherwise prefer direct, measurement-free transport to the displayed output
+    before choosing a representative from the flow generators. An arbitrary
+    representative can introduce stabilizers merely to undo its own gauge choice.
     """
     desired = stim.Flow(input=previous, output=current, measurements=measurements)
     if not segment.has_flow(desired):
@@ -526,6 +531,30 @@ def explain_transition(
     transport = stim.Flow(input=previous, output=previous)
     generators: list[stim.Flow] | None = None
     if not segment.has_flow(transport):
+        direct = stim.Flow(input=previous, output=current)
+        if segment.has_flow(direct) and segment.has_flow(desired * direct):
+            # For example, a surgery bridge's preparation extends a Z string
+            # through the new data qubits. No measured-check deformation is
+            # required to relate these actual representatives. Any additional
+            # observable records form a measurement-only relation, not a
+            # geometric stabilizer product.
+            return {
+                "validated": True,
+                "kind": "circuit_transport",
+                "factors": [],
+                "measurements": measurements,
+                "measurement_relation": measurements,
+                "sign": _phase(current),
+                "transport_support": _support(current, coordinates),
+                "transport_measurements": [],
+                "description": "Direct circuit transport between the displayed logical "
+                "operators requires no measurement parity or stabilizer deformation."
+                + (
+                    " The observable also includes the indicated measurement-only relation."
+                    if measurements
+                    else ""
+                ),
+            }
         generators = segment.flow_generators()
         n = max(segment.num_qubits, len(previous), len(current))
         # Prefer unchanged support allowing a measured parity, then let the
