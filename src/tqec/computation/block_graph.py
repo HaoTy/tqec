@@ -8,7 +8,7 @@ import pathlib
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from io import BytesIO
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 import numpy as np
 from networkx import Graph, is_connected
@@ -29,10 +29,12 @@ from tqec.utils.exceptions import TQECError
 from tqec.utils.position import Direction3D, Position3D, SignedDirection3D
 
 if TYPE_CHECKING:
+    from tqec.compile.convention import Convention
     from tqec.computation.correlation import CorrelationSurface
     from tqec.computation.open_graph import FilledGraph
     from tqec.interop.collada.html_viewer import _ColladaHTMLViewer
     from tqec.interop.pyzx.positioned import PositionedZX
+    from tqec.visualisation.patches.html import PatchHTMLViewer
 
 
 BlockKind = CubeKind | PipeKind
@@ -596,6 +598,49 @@ class BlockGraph:
             filepath_or_bytes=bytes_buffer.getvalue(),
             write_html_filepath=write_html_filepath,
         )
+
+    def view_patches_as_html(
+        self,
+        k: int = 1,
+        write_html_filepath: str | pathlib.Path | None = None,
+        *,
+        convention: Convention | None = None,
+        observables: list[CorrelationSurface] | Literal["auto"] | None = "auto",
+    ) -> PatchHTMLViewer:
+        """View compiled surface-code rounds and unsupported blocks together in 3D.
+
+        Ordinary cubes contain ``d = 2*k + 1`` rounds. Spatial bridges use the
+        physical compilation geometry. Unsupported operations and their affected
+        boundaries retain their block-level representation, with an explanation
+        in the viewer. Physical logical operators and stabilizer differences are
+        displayed only where their circuit flows can be established.
+
+        Args:
+            k: positive integer scaling factor. Defaults to 1 (distance 3).
+            write_html_filepath: optional destination for the generated HTML.
+            convention: compilation convention. ``None`` selects
+                :data:`~tqec.compile.convention.FIXED_BULK_CONVENTION`.
+            observables: ``"auto"`` discovers correlation surfaces, a list selects
+                explicit surfaces, and ``None`` disables observable overlays.
+                If discovery is unsupported, the scene remains available with
+                an explanatory notice. Explicit partial surfaces may terminate
+                at block-level regions.
+
+        Returns:
+            An HTML viewer supporting notebook display and ``str(viewer)``.
+            Like the block viewer, it loads Three.js from a CDN.
+
+        Raises:
+            TQECError: if ``k`` is invalid, the graph is malformed, or an explicit
+                surface references a cube or pipe absent from the graph.
+
+        """
+        from tqec.compile.convention import FIXED_BULK_CONVENTION  # noqa: PLC0415
+        from tqec.visualisation.patches.html import display_patch_scene  # noqa: PLC0415
+        from tqec.visualisation.patches.scene import build_patch_scene  # noqa: PLC0415
+
+        scene = build_patch_scene(self, k, convention or FIXED_BULK_CONVENTION, observables)
+        return display_patch_scene(scene, write_html_filepath)
 
     def shift_by(self, dx: int = 0, dy: int = 0, dz: int = 0) -> BlockGraph:
         """Shift a copy of ``self`` by the given offset in the x, y, z directions and return it.

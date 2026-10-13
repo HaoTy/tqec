@@ -30,5 +30,6 @@ User Guide
    Build Computations <build_computation>
    BGRAPH <bgraph>
    Collada <collada_interop>
+   3D surface-code patches <patch_visualisation>
    Detailed plotting <detailed_plots>
    tqec CLI <cli_examples>

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Iterator, Mapping, Sequence
+from dataclasses import dataclass
 from multiprocessing import cpu_count
 from pathlib import Path
 from typing import Any
@@ -11,7 +12,9 @@ from typing_extensions import override
 
 from tqec.circuit.qubit import GridQubit
 from tqec.circuit.qubit_map import QubitMap
+from tqec.circuit.schedule.circuit import ScheduledCircuit
 from tqec.compile.blocks.layers.atomic.layout import LayoutLayer
+from tqec.compile.blocks.layers.composed.base import BaseComposedLayer
 from tqec.compile.blocks.layers.composed.sequenced import SequencedLayers
 from tqec.compile.detectors.database import CURRENT_DATABASE_VERSION, DetectorDatabase
 from tqec.compile.observables.abstract_observable import AbstractObservable
@@ -25,6 +28,27 @@ from tqec.compile.tree.node import AnnotationContext, LayerNode, NodeWalker
 from tqec.post_processing.shift import shift_to_only_positive
 from tqec.utils.exceptions import TQECError, TQECWarning
 from tqec.utils.paths import DEFAULT_DETECTOR_DATABASE_PATH
+
+
+@dataclass(frozen=True)
+class LayerCycle:
+    """A concrete layout round with half-open circuit offsets.
+
+    Block slices are indexed relative to the tree's first slice. Circuit qubit
+    indices are local to ``circuit.qubit_map``. The end tick includes the separator
+    tick before the next round. Detector and observable annotations are omitted.
+    """
+
+    index: int
+    block_z: int
+    round_index: int
+    layer: LayoutLayer
+    circuit: ScheduledCircuit
+    tick_start: int
+    tick_end: int
+    measurement_start: int
+    measurement_end: int
+    is_transition: bool = False
 
 
 class QubitLister(NodeWalker):
@@ -112,6 +136,51 @@ class LayerTree:
         self._annotations = dict(annotations) if annotations is not None else {}
         self._observable_builder = observable_builder
         self._slices_with_temporal_hadamard_layer = slices_with_temporal_hadamard_layer or set()
+
+    def iter_cycles(self, k: int) -> Iterator[LayerCycle]:
+        """Expand repeated rounds, retaining their block slice and circuit ranges.
+
+        This iterator generates noiseless physical round circuits without
+        computing detectors, opening a detector database, or adding observables.
+        Distinct repeated layer instances are compiled once per iteration.
+        """
+        if isinstance(k, bool) or not isinstance(k, int) or k < 1:
+            raise TQECError("k must be a positive integer.")
+        cache: dict[int, ScheduledCircuit] = {}
+        index = ticks = measurements = 0
+        for block_z, subtree in enumerate(self._root.children):
+            root_layer = subtree._layer
+            layers = (
+                list(root_layer.all_layers(k))
+                if isinstance(root_layer, BaseComposedLayer)
+                else [root_layer]
+            )
+            for round_index, layer in enumerate(layers):
+                if not isinstance(layer, LayoutLayer):
+                    raise TQECError("Cycle iteration requires compiled LayoutLayer leaves.")
+                if id(layer) not in cache:
+                    cache[id(layer)] = layer.to_circuit(k)
+                circuit = cache[id(layer)]
+                raw = circuit.get_circuit()
+                end_tick = ticks + raw.num_ticks + 1
+                end_measurement = measurements + raw.num_measurements
+                yield LayerCycle(
+                    index,
+                    block_z,
+                    round_index,
+                    layer,
+                    circuit,
+                    ticks,
+                    end_tick,
+                    measurements,
+                    end_measurement,
+                    is_transition=(
+                        block_z in self._slices_with_temporal_hadamard_layer
+                        and round_index == len(layers) - 1
+                    ),
+                )
+                index += 1
+                ticks, measurements = end_tick, end_measurement
 
     def to_dict(self) -> dict[str, Any]:
         """Return a dictionary representation of ``self``."""
